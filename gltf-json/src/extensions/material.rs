@@ -88,6 +88,14 @@ pub struct Material {
     )]
     pub anisotropy: Option<Anisotropy>,
 
+    #[cfg(feature = "KHR_materials_iridescence")]
+    #[serde(
+        default,
+        rename = "KHR_materials_iridescence",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub iridescence: Option<Iridescence>,
+
     #[cfg(feature = "extensions")]
     #[serde(default, flatten)]
     pub others: Map<String, Value>,
@@ -605,6 +613,96 @@ pub struct Anisotropy {
     /// The blue channel contains strength as [0,1] to be multiplied by the anisotropy strength.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub anisotropy_texture: Option<crate::texture::Info>,
+
+    /// Optional application specific data.
+    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    pub extras: Extras,
+}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Default is `0.0`
+pub struct IridescenceFactor(pub f32);
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Default for IridescenceFactor {
+    fn default() -> Self {
+        IridescenceFactor(0.0)
+    }
+}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Validate for IridescenceFactor {}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Default is `1.3`
+pub struct IridescenceIor(pub f32);
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Default for IridescenceIor {
+    fn default() -> Self {
+        IridescenceIor(1.3)
+    }
+}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Validate for IridescenceIor {}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Default is `100.0`
+pub struct IridescenceThicknessMinimum(pub f32);
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Default for IridescenceThicknessMinimum {
+    fn default() -> Self {
+        IridescenceThicknessMinimum(100.0)
+    }
+}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Validate for IridescenceThicknessMinimum {}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Default is `400.0`
+pub struct IridescenceThicknessMaximum(pub f32);
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Default for IridescenceThicknessMaximum {
+    fn default() -> Self {
+        IridescenceThicknessMaximum(400.0)
+    }
+}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+impl Validate for IridescenceThicknessMaximum {}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Iridescence {
+    /// The iridescence intensity factor.
+    pub iridescence_factor: IridescenceFactor,
+
+    /// The iridescence intensity texture.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub iridescence_texture: Option<crate::texture::Info>,
+
+    /// The index of refraction of the dielectric thin-film layer.
+    pub iridescence_ior: IridescenceIor,
+
+    /// The minimum thickness of the thin-film layer given in nanometers.
+    pub iridescence_thickness_minimum: IridescenceThicknessMinimum,
+
+    /// The maximum thickness of the thin-film layer given in nanometers.
+    pub iridescence_thickness_maximum: IridescenceThicknessMaximum,
+
+    /// The thickness texture of the thin-film layer.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub iridescence_thickness_texture: Option<crate::texture::Info>,
 
     /// Optional application specific data.
     #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]

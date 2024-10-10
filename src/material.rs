@@ -279,7 +279,7 @@ impl<'a> Material<'a> {
 
     /// Parameter values that define the sheen material model.
     ///
-    /// [`KHR_materials_sheen`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
+    /// [`KHR_materials_anisotropy`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_anisotropy/README.md)
     #[cfg(feature = "KHR_materials_anisotropy")]
     #[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_anisotropy")))]
     pub fn anisotropy(&self) -> Option<Anisotropy> {
@@ -289,6 +289,20 @@ impl<'a> Material<'a> {
             .anisotropy
             .as_ref()
             .map(|anisotropy| Anisotropy::new(self.document, anisotropy))
+    }
+
+    /// Parameter values that define the iridescence material model.
+    ///
+    /// [`KHR_materials_iridescence`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_iridescence/README.md)
+    #[cfg(feature = "KHR_materials_iridescence")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_iridescence")))]
+    pub fn iridescence(&self) -> Option<Iridescence> {
+        self.json
+            .extensions
+            .as_ref()?
+            .iridescence
+            .as_ref()
+            .map(|iridescence| Iridescence::new(self.document, iridescence))
     }
 
     /// Optional application specific data.
@@ -917,6 +931,83 @@ impl<'a> Anisotropy<'a> {
             let texture = self.document.textures().nth(json.index.value()).unwrap();
             texture::Info::new(texture, json)
         })
+    }
+
+    /// Optional application specific data.
+    pub fn extras(&self) -> &'a json::Extras {
+        &self.json.extras
+    }
+}
+
+/// Parameter values that define the iridescence material model.
+///
+/// [`KHR_materials_iridescence`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_iridescence/README.md)
+#[cfg(feature = "KHR_materials_iridescence")]
+#[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_iridescence")))]
+pub struct Iridescence<'a> {
+    /// The parent `Document` struct.
+    document: &'a Document,
+
+    /// The corresponding JSON struct.
+    json: &'a json::extensions::material::Iridescence,
+}
+
+#[cfg(feature = "KHR_materials_iridescence")]
+#[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_iridescence")))]
+impl<'a> Iridescence<'a> {
+    /// Constructs `Iridescence`.
+    pub(crate) fn new(
+        document: &'a Document,
+        json: &'a json::extensions::material::Iridescence,
+    ) -> Self {
+        Self { document, json }
+    }
+
+    /// The iridescence intensity factor.
+    ///
+    /// The default value is `0.0`.
+    pub fn iridescence_factor(&self) -> f32 {
+        self.json.iridescence_factor.0
+    }
+
+    /// The iridescence intensity texture.
+    pub fn iridescence_texture(&self) -> Option<texture::Info<'a>> {
+        self.json.iridescence_texture.as_ref().map(|json| {
+            let texture = self.document.textures().nth(json.index.value()).unwrap();
+            texture::Info::new(texture, json)
+        })
+    }
+
+    /// The index of refraction of the dielectric thin-film layer.
+    ///
+    /// The default value is `1.3`.
+    pub fn iridescence_ior(&self) -> f32 {
+        self.json.iridescence_ior.0
+    }
+
+    /// The minimum thickness of the thin-film layer given in nanometers.
+    ///
+    /// The default value is `100.0`.
+    pub fn iridescence_thickness_minimum(&self) -> f32 {
+        self.json.iridescence_thickness_minimum.0
+    }
+
+    /// The maximum thickness of the thin-film layer given in nanometers.
+    ///
+    /// The default value is `400.0`.
+    pub fn iridescence_thickness_maximum(&self) -> f32 {
+        self.json.iridescence_thickness_maximum.0
+    }
+
+    /// The thickness texture of the thin-film layer.
+    pub fn iridescence_thickness_texture(&self) -> Option<texture::Info<'a>> {
+        self.json
+            .iridescence_thickness_texture
+            .as_ref()
+            .map(|json| {
+                let texture = self.document.textures().nth(json.index.value()).unwrap();
+                texture::Info::new(texture, json)
+            })
     }
 
     /// Optional application specific data.
