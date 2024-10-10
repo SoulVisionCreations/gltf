@@ -277,6 +277,20 @@ impl<'a> Material<'a> {
             .map(|sheen| Sheen::new(self.document, sheen))
     }
 
+    /// Parameter values that define the sheen material model.
+    ///
+    /// [`KHR_materials_sheen`](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
+    #[cfg(feature = "KHR_materials_anisotropy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_anisotropy")))]
+    pub fn anisotropy(&self) -> Option<Anisotropy> {
+        self.json
+            .extensions
+            .as_ref()?
+            .anisotropy
+            .as_ref()
+            .map(|anisotropy| Anisotropy::new(self.document, anisotropy))
+    }
+
     /// Optional application specific data.
     pub fn extras(&self) -> &'a json::Extras {
         &self.json.extras
@@ -842,6 +856,64 @@ impl<'a> Sheen<'a> {
     /// The sheen roughness (Alpha) texture.
     pub fn sheen_roughness_texture(&self) -> Option<texture::Info<'a>> {
         self.json.sheen_roughness_texture.as_ref().map(|json| {
+            let texture = self.document.textures().nth(json.index.value()).unwrap();
+            texture::Info::new(texture, json)
+        })
+    }
+
+    /// Optional application specific data.
+    pub fn extras(&self) -> &'a json::Extras {
+        &self.json.extras
+    }
+}
+
+/// Parameter values that define the anisotropy material model.
+///
+/// [`KHR_materials_anisotropy`](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy/README.md)
+#[cfg(feature = "KHR_materials_anisotropy")]
+#[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_anisotropy")))]
+pub struct Anisotropy<'a> {
+    /// The parent `Document` struct.
+    document: &'a Document,
+
+    /// The corresponding JSON struct.
+    json: &'a json::extensions::material::Anisotropy,
+}
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+#[cfg_attr(docsrs, doc(cfg(feature = "KHR_materials_anisotropy")))]
+impl<'a> Anisotropy<'a> {
+    /// Constructs `Anisotropy`.
+    pub(crate) fn new(
+        document: &'a Document,
+        json: &'a json::extensions::material::Anisotropy,
+    ) -> Self {
+        Self { document, json }
+    }
+
+    /// The anisotropy strength. When the anisotropy texture is present,
+    /// this value is multiplied by the texture's blue channel.
+    ///
+    /// The default value is `0.0`.
+    pub fn anisotropy_strength(&self) -> f32 {
+        self.json.anisotropy_strength.0
+    }
+
+    /// The rotation of the anisotropy in tangent, bitangent space,
+    /// measured in radians counter-clockwise from the tangent.
+    /// When the anisotropy texture is present,
+    /// this value provides additional rotation to the vectors in the texture.
+    ///
+    /// The default value is `0.0`.
+    pub fn anisotropy_rotation(&self) -> f32 {
+        self.json.anisotropy_rotation.0
+    }
+
+    /// The anisotropy texture. Red and green channels represent the anisotropy direction
+    /// in [−1,1] tangent, bitangent space to be rotated by the anisotropy rotation.
+    /// The blue channel contains strength as [0,1] to be multiplied by the anisotropy strength.
+    pub fn anisotropy_texture(&self) -> Option<texture::Info<'a>> {
+        self.json.anisotropy_texture.as_ref().map(|json| {
             let texture = self.document.textures().nth(json.index.value()).unwrap();
             texture::Info::new(texture, json)
         })

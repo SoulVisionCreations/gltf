@@ -80,6 +80,14 @@ pub struct Material {
     )]
     pub sheen: Option<Sheen>,
 
+    #[cfg(feature = "KHR_materials_anisotropy")]
+    #[serde(
+        default,
+        rename = "KHR_materials_anisotropy",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub anisotropy: Option<Anisotropy>,
+
     #[cfg(feature = "extensions")]
     #[serde(default, flatten)]
     pub others: Map<String, Value>,
@@ -541,6 +549,62 @@ pub struct Sheen {
     /// The sheen roughness (Alpha) texture.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sheen_roughness_texture: Option<crate::texture::Info>,
+
+    /// Optional application specific data.
+    #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
+    #[cfg_attr(not(feature = "extras"), serde(skip_serializing))]
+    pub extras: Extras,
+}
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Default is `0.0`
+pub struct AnisotropyStrength(pub f32);
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+impl Default for AnisotropyStrength {
+    fn default() -> Self {
+        AnisotropyStrength(0.0)
+    }
+}
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+impl Validate for AnisotropyStrength {}
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+/// Default is `0.0`
+pub struct AnisotropyRotation(pub f32);
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+impl Default for AnisotropyRotation {
+    fn default() -> Self {
+        AnisotropyRotation(0.0)
+    }
+}
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+impl Validate for AnisotropyRotation {}
+
+#[cfg(feature = "KHR_materials_anisotropy")]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, Validate)]
+#[serde(default, rename_all = "camelCase")]
+pub struct Anisotropy {
+    /// The anisotropy strength. When the anisotropy texture is present,
+    /// this value is multiplied by the texture's blue channel.
+    pub anisotropy_strength: AnisotropyStrength,
+
+    /// The rotation of the anisotropy in tangent, bitangent space,
+    /// measured in radians counter-clockwise from the tangent.
+    /// When the anisotropy texture is present,
+    /// this value provides additional rotation to the vectors in the texture.
+    pub anisotropy_rotation: AnisotropyRotation,
+
+    /// The anisotropy texture. Red and green channels represent the anisotropy direction
+    /// in [−1,1] tangent, bitangent space to be rotated by the anisotropy rotation.
+    /// The blue channel contains strength as [0,1] to be multiplied by the anisotropy strength.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub anisotropy_texture: Option<crate::texture::Info>,
 
     /// Optional application specific data.
     #[cfg_attr(feature = "extras", serde(skip_serializing_if = "Option::is_none"))]
